@@ -1,0 +1,31 @@
+@{
+    ViewData["Title"] = "Usuarios";
+}
+
+@model List<Usuario>
+
+<h2>Usuarios</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Usuario usuario in Model)
+        {
+            <tr>
+                <td>@usuario.Id</td>
+                <td>@usuario.NombreUsuario</td>
+                <td>
+                    <a asp-controller="Usuario" asp-action="EditarUsuario" asp-route-idUsuario="@usuario.Id" class="btn btn-outline-info">Editar</a>
+                    <a asp-controller="Usuario" asp-action="EliminarUsuario" asp-route-idUsuario="@usuario.Id" class="btn btn-outline-danger" onclick="return confirm('¿Estas seguro que quieres eliminar el usuario?')">Eliminar</a>
+                    <a asp-controller="Tablero" asp-action="ListarTablerosUsuario" asp-route-idUsuario="@usuario.Id" class="btn btn-outline-dark">Ver tableros</a>                  
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<a asp-controller="Usuario" asp-action="CrearUsuario" class="btn btn-outline-success btn-add">+ Crear usuario</a>

@@ -1,0 +1,30 @@
+@model Tarea
+
+@{ViewData["title"]="Editar tarea";}
+
+<h1 class="text-center">Editar tarea</h1>
+<form asp-controller="Tarea" asp-action="EditarTarea" method="post" class="form-view">
+    <section>
+        <label class="form-label">Nombre: </label>
+        <input asp-for = "@Model.Nombre" value="@Model.Nombre" class="form-control" required>
+    </section>
+    <section>
+        <label class="form-label">Descripcion: </label>
+        <input asp-for = "@Model.Descripcion" value="@Model.Descripcion" class="form-control">
+    </section>
+    <section>
+        <label class="form-label">Color: </label>
+        <input asp-for = "@Model.Color" value="@Model.Color" class="form-control">
+    </section>
+    <section>
+        <label class="form-label">Estado de la tarea: </label>
+        <select asp-for="@Model.Estado" asp-items="@Html.GetEnumSelectList<EstadoTarea>()" class="form-select" aria-label="Default select example"></select>
+    </section>
+    <section>
+        <label asp-for="@Model.IdUsuarioAsignado" class="form-label">Id usuario asignado: </label>
+        <input asp-for="@Model.IdUsuarioAsignado" class="form-control">
+    </section>
+    <input hidden asp-for="@Model.IdTablero" value="@Model.IdTablero">
+    <input hidden asp-for="@Model.Id" value="@Model.Id">
+    <input type="submit" class="btn btn-outline-success" value="Confirmar">
+</form>

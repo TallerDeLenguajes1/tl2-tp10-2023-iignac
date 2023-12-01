@@ -1,0 +1,41 @@
+@model List<Tarea>
+
+@{ViewData["Title"] = "Tareas del usuario";}
+
+@if(@Model.Count > 0){
+    <h1 class="text-center">Tareas</h1>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th hidden>Id Tablero</th>
+                <th>Nombre</th>
+                <th>Descripcion</th>
+                <th>Color</th>
+                <th>Estado</th>
+                <th>Id usuario asignado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Tarea tarea in Model)
+            {
+                <tr>
+                    <td>@tarea.Id</td>
+                    <td hidden>@tarea.IdTablero</td>
+                    <td>@tarea.Nombre</td>
+                    <td>@tarea.Descripcion</td>
+                    <td>@tarea.Color</td>
+                    <td>@tarea.Estado.ToString()</td>
+                    <td>@tarea.IdUsuarioAsignado</td>
+                    <td>
+                        <a asp-controller="Tarea" asp-action="EditarTarea" asp-route-idTarea="@tarea.Id" class="btn btn-outline-info">Editar tarea</a>
+                        <a asp-controller="Tarea" asp-action="EliminarTarea" asp-route-idTarea="@tarea.Id" class="btn btn-outline-danger" onclick="return confirm('¿Estas seguro que quieres eliminar la tarea?')">Eliminar tarea</a>                      
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}else{
+    <p>EL TABLERO NO TIENE TAREAS REGISTRADAS</p>
+}

@@ -1,0 +1,10 @@
+@model Usuario
+
+@{ViewData["title"]="Crear usuario";}
+
+<h1 class="text-center">Crear usuario</h1>
+<form asp-controller="Usuario" asp-action="CrearUsuario" method="post" class="form-view">
+    <label class="form-label">Nombre </label>
+    <input asp-for = "@Model.NombreUsuario" class="form-control">
+    <input type="submit" class="btn btn-outline-success">
+</form>

@@ -6,5 +6,6 @@ public interface IUsuarioRepository
     public void Update(Usuario usuario);
     public void Remove(int idUsuario);
     public List<Usuario> GetAll();
-    public Usuario GetByIdUsuario(int idUsuario);
+    public Usuario GetUsuario(int idUsuario);
+    public Usuario GetUsuario(string nombre, string contrasenia);
 }

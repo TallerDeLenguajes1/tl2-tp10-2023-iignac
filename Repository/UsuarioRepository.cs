@@ -10,9 +10,11 @@ public class UsuarioRepository : IUsuarioRepository
         using (SQLiteConnection connection = new SQLiteConnection(cadenaConexion))
         {
             connection.Open();
-            string query = @"INSERT INTO Usuario (nombre_de_usuario) VALUES (@nombreUs);";  //$INSERT...(@nombreUs)"; 
+            string query = @"INSERT INTO Usuario (nombre_de_usuario, contrasenia, rol) VALUES (@nombreUs, @contraseniaUs, @rolUs);";  //$INSERT..."; 
             SQLiteCommand command = new SQLiteCommand(query, connection);
             command.Parameters.Add(new SQLiteParameter("@nombreUs", nuevoUsuario.NombreUsuario));
+            command.Parameters.Add(new SQLiteParameter("@contraseniaUs", nuevoUsuario.Contrasenia));
+            command.Parameters.Add(new SQLiteParameter("@rolUs", Convert.ToInt32(nuevoUsuario.RolUsuario)));
             command.ExecuteNonQuery();
             connection.Close();
         }
@@ -22,10 +24,17 @@ public class UsuarioRepository : IUsuarioRepository
         using (SQLiteConnection connection = new SQLiteConnection(cadenaConexion))
         {
             connection.Open();
-            string query = @"UPDATE Usuario SET nombre_de_usuario = @nombreUs WHERE id = @idUs;"; //$UPDATE...
+            string query;
+            if(!string.IsNullOrEmpty(usuarioModificar.Contrasenia)){
+                query = @"UPDATE Usuario SET nombre_de_usuario = @nombreUs, contrasenia = @contraseniaUs, rol = @rolUs WHERE id = @idUs;"; //$UPDATE...
+            }else{
+                query = @"UPDATE Usuario SET nombre_de_usuario = @nombreUs, rol = @rolUs WHERE id = @idUs;"; //$UPDATE...
+            }
             SQLiteCommand command = new SQLiteCommand(query, connection);
             command.Parameters.Add(new SQLiteParameter("@idUs", usuarioModificar.Id));
             command.Parameters.Add(new SQLiteParameter("@nombreUs", usuarioModificar.NombreUsuario));
+            if(!string.IsNullOrEmpty(usuarioModificar.Contrasenia)) command.Parameters.Add(new SQLiteParameter("@contraseniaUs", usuarioModificar.Contrasenia));
+            command.Parameters.Add(new SQLiteParameter("@rolUs", Convert.ToInt32(usuarioModificar.RolUsuario)));
             command.ExecuteNonQuery();
             connection.Close();
         }
@@ -45,6 +54,8 @@ public class UsuarioRepository : IUsuarioRepository
                     Usuario usuario = new Usuario();
                     usuario.Id = Convert.ToInt32(reader["id"]);
                     usuario.NombreUsuario = reader["nombre_de_usuario"].ToString();
+                    usuario.Contrasenia = reader["contrasenia"].ToString();
+                    usuario.RolUsuario = (Rol) Convert.ToInt32(reader["rol"]);
                     listaUsuarios.Add(usuario);
                 }
             }
@@ -53,7 +64,7 @@ public class UsuarioRepository : IUsuarioRepository
         return listaUsuarios;
     }
 
-    public Usuario GetByIdUsuario(int idUsuario){
+    public Usuario GetUsuario(int idUsuario){
         Usuario usuario = new Usuario();
         using (SQLiteConnection connection = new SQLiteConnection(cadenaConexion))
         {
@@ -67,6 +78,32 @@ public class UsuarioRepository : IUsuarioRepository
                 {
                     usuario.Id = Convert.ToInt32(reader["id"]);
                     usuario.NombreUsuario = reader["nombre_de_usuario"].ToString();
+                    usuario.Contrasenia = reader["contrasenia"].ToString();
+                    usuario.RolUsuario = (Rol) Convert.ToInt32(reader["rol"]);
+                }
+            }
+            connection.Close();
+        }
+        return usuario;
+    }
+
+    public Usuario GetUsuario(string nombre, string contrasenia){
+        Usuario usuario = new Usuario();
+        using (SQLiteConnection connection = new SQLiteConnection(cadenaConexion))
+        {
+            connection.Open();
+            string query = @"SELECT * FROM Usuario WHERE nombre_de_usuario = @nombreUsuario AND contrasenia = @contraseniaUsuario;"; 
+            SQLiteCommand command = new SQLiteCommand(query, connection);
+            command.Parameters.Add(new SQLiteParameter("@nombreUsuario", nombre));
+            command.Parameters.Add(new SQLiteParameter("@contraseniaUsuario", contrasenia));
+            using(SQLiteDataReader reader = command.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    usuario.Id = Convert.ToInt32(reader["id"]);
+                    usuario.NombreUsuario = reader["nombre_de_usuario"].ToString();
+                    usuario.Contrasenia = reader["contrasenia"].ToString();
+                    usuario.RolUsuario = (Rol) Convert.ToInt32(reader["rol"]);
                 }
             }
             connection.Close();

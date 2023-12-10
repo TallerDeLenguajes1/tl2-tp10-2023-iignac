@@ -1,0 +1,42 @@
+@model tl2_tp10_2023_iignac.ViewModels.TablerosUsuarioViewModel
+
+@{ViewData["Title"] = "Tableros";}
+
+<section>
+    <h1>Tableros de @Model.NombrePropietario</h1>
+    @if(@Model.ListaTablerosUsuario.Count == 0){
+        <p><strong>NO EXISTEN TABLEROS ASOCIADOS AL USUARIO</strong></p>
+    }else{
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Descripcion</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var tablero in Model.ListaTablerosUsuario)
+                {
+                    <tr>
+                        <td>@tablero.Id</td>
+                        <td>@tablero.Nombre</td>
+                        @if(String.IsNullOrEmpty(tablero.Descripcion)){
+                            <td>Sin descripcion</td>
+                        }else{
+                            <td>@tablero.Descripcion</td>
+                        }
+                        <td>
+                            <a asp-controller="Tarea" asp-action="CrearTarea" asp-route-idTablero="@tablero.Id" class="btn btn-outline-success">+ Crear tarea</a>
+                            <a asp-controller="Tarea" asp-action="ListarTareas" asp-route-idTablero = "@tablero.Id" class="btn btn-outline-dark">Ver tareas</a>
+                            <a asp-controller="Tablero" asp-action="EditarTablero" asp-route-idTablero="@tablero.Id" class="btn btn-outline-info">Editar tablero</a>
+                            <a asp-controller="Tablero" asp-action="EliminarTablero" asp-route-idTablero="@tablero.Id" class="btn btn-outline-danger" onclick="return confirm('¿Estas seguro que quieres eliminar el tablero?')">Eliminar tablero</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    <a asp-controller="Tablero" asp-action="CrearTablero" asp-route-idUsuario="@Model.IdPropietario" class="btn btn-outline-success btn-add" >+ Crear tablero</a>
+</section>

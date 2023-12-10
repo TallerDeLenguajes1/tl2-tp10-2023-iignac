@@ -1,36 +1,45 @@
-using tl2_tp10_2023_iignac.ViewModels;
+namespace tl2_tp10_2023_iignac.ViewModels;
+using System.ComponentModel.DataAnnotations;
+using tl2_tp10_2023_iignac.Models;
 
-namespace tl2_tp10_2023_iignac.Models;
-
-public enum EstadoTarea{ Ideas, ToDo, Doing, Review, Done}
-
-public class Tarea
+public class TareaViewModel
 {
-    private int id; //PK - autoincremental
-    private int idTablero; //FK
-    private int? idUsuarioAsignado; //una tarea puede o no tener un usuario asignado, por eso IdUsuarioAsignado puede ser null
+    private int id;
+    private int idTablero;
     private string nombre;
     private string? descripcion;
     private string? color;
     private EstadoTarea estado;
+    private int? idUsuarioAsignado;
 
     public int Id { get => id; set => id = value; }
     public int IdTablero { get => idTablero; set => idTablero = value; }
-    public int? IdUsuarioAsignado { get => idUsuarioAsignado; set => idUsuarioAsignado = value; }
+    
+    [Required(ErrorMessage = "Este campo es requerido")]
+    [Display(Name = "Nombre de la tarea")]
     public string Nombre { get => nombre; set => nombre = value; }
+    
+    [Display(Name = "Descripción de la tarea")]
     public string? Descripcion { get => descripcion; set => descripcion = value; }
+    
+    [Display(Name = "Color de la tarea")]
     public string? Color { get => color; set => color = value; }
+    
+    [Display(Name = "Estado de la tarea")]
     public EstadoTarea Estado { get => estado; set => estado = value; }
+    
+    [Display(Name = "Usuario a asignar")]
+    public int? IdUsuarioAsignado { get => idUsuarioAsignado; set => idUsuarioAsignado = value; }
 
-    public Tarea(TareaViewModel tarea){
+    public TareaViewModel(Tarea tarea){
         this.id = tarea.Id;
         this.idTablero = tarea.IdTablero;
-        this.idUsuarioAsignado = tarea.IdUsuarioAsignado;
         this.nombre = tarea.Nombre;
         this.descripcion = tarea.Descripcion;
         this.color = tarea.Color;
         this.estado = tarea.Estado;
+        this.idUsuarioAsignado = tarea.IdUsuarioAsignado;
     }
 
-    public Tarea(){}
+    public TareaViewModel(){}
 }

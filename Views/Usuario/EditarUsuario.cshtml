@@ -1,11 +1,23 @@
-@model Usuario
+@model tl2_tp10_2023_iignac.ViewModels.UsuarioViewModel 
 
 @{ViewData["title"]="Editar usuario";}
 
 <h1 class="text-center">Editar usuario</h1>
-<form asp-controller="Usuario" asp-action="EditarUsuario" method="post" class="form-view">
-    <label class="form-label">Nombre</label>
-    <input asp-for="@Model.NombreUsuario" value="@Model.NombreUsuario" class="form-control">
-    <input hidden asp-for="@Model.Id">
-    <input type="submit" class="btn btn-outline-success">
-</form>
+<section>
+    <form asp-controller="Usuario" asp-action="EditarUsuario" method="post" class="form-view">
+        <section class="mb-3">
+            <label asp-for="@Model.Nombre" class="form-label"></label>
+            <input asp-for="@Model.Nombre" value="@Model.Nombre" class="form-control">
+        </section>
+        <section class="mb-3">
+            <label asp-for="@Model.Contrasenia" class="form-label"></label>
+            <input asp-for="@Model.Contrasenia" type="password" class="form-control">
+        </section>
+        <section class="mb-3">
+            <label asp-for="@Model.Rol"></label>
+            <select asp-for="@Model.Rol" asp-items="@Html.GetEnumSelectList<Rol>()" class="form-select" aria-label="Default select example"></select>
+        </section>
+        <input hidden asp-for="@Model.Id" value="@Model.Id">
+        <input type="submit" class="btn btn-outline-success">
+    </form>
+</section>

@@ -1,30 +1,37 @@
-@model Tarea
+@model tl2_tp10_2023_iignac.ViewModels.EditarTareaViewModel
 
 @{ViewData["title"]="Editar tarea";}
 
-<h1 class="text-center">Editar tarea</h1>
-<form asp-controller="Tarea" asp-action="EditarTarea" method="post" class="form-view">
-    <section>
-        <label class="form-label">Nombre: </label>
-        <input asp-for = "@Model.Nombre" value="@Model.Nombre" class="form-control" required>
-    </section>
-    <section>
-        <label class="form-label">Descripcion: </label>
-        <input asp-for = "@Model.Descripcion" value="@Model.Descripcion" class="form-control">
-    </section>
-    <section>
-        <label class="form-label">Color: </label>
-        <input asp-for = "@Model.Color" value="@Model.Color" class="form-control">
-    </section>
-    <section>
-        <label class="form-label">Estado de la tarea: </label>
-        <select asp-for="@Model.Estado" asp-items="@Html.GetEnumSelectList<EstadoTarea>()" class="form-select" aria-label="Default select example"></select>
-    </section>
-    <section>
-        <label asp-for="@Model.IdUsuarioAsignado" class="form-label">Id usuario asignado: </label>
-        <input asp-for="@Model.IdUsuarioAsignado" class="form-control">
-    </section>
-    <input hidden asp-for="@Model.IdTablero" value="@Model.IdTablero">
-    <input hidden asp-for="@Model.Id" value="@Model.Id">
-    <input type="submit" class="btn btn-outline-success" value="Confirmar">
-</form>
+<section>
+    <h1 class="text-center">Editar tarea</h1>
+    <form asp-controller="Tarea" asp-action="EditarTarea" method="post" class="form-view">
+        <section class="mb-3">
+            <label asp-for="@Model.TareaVM.Nombre" class="form-label"></label>
+            <input asp-for="@Model.TareaVM.Nombre" value="@Model.TareaVM.Nombre" class="form-control" required>
+        </section>
+        <section class="mb-3">
+            <label asp-for="@Model.TareaVM.Descripcion" class="form-label"></label>
+            <input asp-for="@Model.TareaVM.Descripcion" value="@Model.TareaVM.Descripcion" class="form-control">
+        </section>
+        <section class="mb-3">
+            <label asp-for="@Model.TareaVM.Color" class="form-label"></label>
+            <input asp-for="@Model.TareaVM.Color" value="@Model.TareaVM.Color" class="form-control">
+        </section>
+        <section class="mb-3">
+            <label asp-for="@Model.TareaVM.Estado" class="form-label"></label>
+            <select asp-for="@Model.TareaVM.Estado" asp-items="@Html.GetEnumSelectList<EstadoTarea>()" class="form-select" aria-label="Default select example"></select>
+        </section>
+        <section class="mb-3">
+            <label asp-for="@Model.TareaVM.IdUsuarioAsignado" class="form-label">Asignar usuario</label>
+            <select asp-for="@Model.TareaVM.IdUsuarioAsignado" class="form-select">
+                <option value="">Ninguno</option>
+                @foreach(var usuarioVM in Model.ListaUsuariosVM){
+                    <option value="@usuarioVM.Id">@usuarioVM.Nombre</option>
+                }
+            </select>
+        </section>
+        <input hidden asp-for="@Model.TareaVM.Id">
+        <input hidden asp-for="@Model.TareaVM.IdTablero">
+        <input type="submit" value="Confirmar" class="btn btn-outline-success">
+    </form>
+</section>

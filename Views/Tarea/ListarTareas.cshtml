@@ -1,0 +1,52 @@
+@model tl2_tp10_2023_iignac.ViewModels.TareasTableroViewModel
+
+@{ViewData["Title"] = "Tareas del usuario";}
+
+<section class="content-view">
+    <h1 class="text-center">Tareas del tablero @Model.NombreTablero</h1>
+    @if(@Model.ListaTareasVM.Count > 0){
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nombre</th>
+                    <th>Descripcion</th>
+                    <th>Color</th>
+                    <th>Estado</th>
+                    <th>Usuario asignado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var tareaVM in Model.ListaTareasVM)
+                {
+                    <tr>
+                        <td>@tareaVM.Id</td>
+                        <td>@tareaVM.Nombre</td>
+                        @if(string.IsNullOrEmpty(tareaVM.Descripcion)){
+                            <td>Sin descripción</td>
+                        }else{
+                            <td>@tareaVM.Descripcion</td>
+                        }
+                        <td>@tareaVM.Color</td>  @* <td style="background-color: @tareaVM.Color;"></td> *@
+                        <td>@tareaVM.Estado.ToString()</td>  @* <td>@tareaVM.Estado</td> *@
+                        @{
+                            var usuarioAsignado = Model.ListaUsuariosVM.FirstOrDefault(u => u.Id == tareaVM.IdUsuarioAsignado);
+                            if(usuarioAsignado != null){
+                                <td>@usuarioAsignado.Nombre</td>
+                            }else{
+                                <td>N/A</td>
+                            }
+                        }
+                        <td>
+                            <a asp-controller="Tarea" asp-action="EditarTarea" asp-route-idTarea="@tareaVM.Id" class="btn btn-outline-info">Editar tarea</a>
+                            <a asp-controller="Tarea" asp-action="EliminarTarea" asp-route-idTarea="@tareaVM.Id" class="btn btn-outline-danger" onclick="return confirm('¿Estas seguro que quieres eliminar la tarea?')">Eliminar tarea</a>                      
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }else{
+        <p><strong>El tablero no tiene tareas registradas</strong></p>
+    }
+</section>

@@ -1,19 +1,19 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using tl2_tp10_2023_iignac.Models;
+using tl2_tp10_2023_iignac.Repository;
 using tl2_tp10_2023_iignac.ViewModels;
-
 namespace tl2_tp10_2023_iignac.Controllers;
 
 public class LogueoController : Controller
 {
     private readonly ILogger<LogueoController> _logger;
-    private IUsuarioRepository usuarioRepo;
+    private readonly IUsuarioRepository _usuariosRepo;
 
-    public LogueoController(ILogger<LogueoController> logger)
+    public LogueoController(ILogger<LogueoController> logger, IUsuarioRepository usuariosRepo)
     {
         _logger = logger;
-        usuarioRepo = new UsuarioRepository();
+        _usuariosRepo = usuariosRepo; //inyecto el repositorio
     }
 
     private bool IsAdmin(){
@@ -24,20 +24,22 @@ public class LogueoController : Controller
     public IActionResult index(){ 
         return View(); //return View(new LogueoViewModel());
     }
-
+    
     [HttpPost]
-    public IActionResult ProcesoLogueo(LogueoViewModel logueoUsuario){
-        var usuarioLogueado = usuarioRepo.GetUsuario(logueoUsuario.NombreUsuario, logueoUsuario.ContraseniaUsuario); //usuarioLogueado puede ser tipo 'Usuario' o null
-        if(!string.IsNullOrEmpty(usuarioLogueado.NombreUsuario)){
+    public IActionResult Login(LogueoViewModel logueoUsuario){
+        try{
+            if(!ModelState.IsValid) return RedirectToAction("Index"); //ModelState.IsValid  -> revisa si los atributos de validación del viewModel son válidos
+            var usuarioLogueado = _usuariosRepo.GetUsuario(logueoUsuario.NombreUsuario, logueoUsuario.ContraseniaUsuario);
             LoguearUsuario(usuarioLogueado);
-            if(IsAdmin()){
-                return RedirectToRoute(new {controller = "Usuario", action = "Index"});
-            }
-            return RedirectToRoute(new {controller = "Tablero", action = "ListarTableros"});
+            _logger.LogInformation($"El usuario {usuarioLogueado.NombreUsuario} ingreso correctamente");
+            if(IsAdmin()) RedirectToRoute(new {controller = "Usuario", action = "Index"});
+            return RedirectToRoute(new {controller = "Tablero", action = "ListarTableros", idUsuario = usuarioLogueado.Id});
+        }catch(Exception ex){
+            _logger.LogWarning($"Error: {ex} Intento de acceso invalido - Usuario: {logueoUsuario.NombreUsuario} - Clave ingresada: {logueoUsuario.ContraseniaUsuario}");
+            return RedirectToAction("Index"); 
         }
-        return RedirectToAction("Index"); // o mostrar una pantalla de error (404)
     }
-
+    
     private void LoguearUsuario(Usuario usuario){
         HttpContext.Session.SetString("id", usuario.Id.ToString());
         HttpContext.Session.SetString("usuario", usuario.NombreUsuario);

@@ -25,6 +25,7 @@ public class TareaViewModel
     [Display(Name = "Color de la tarea")]
     public string? Color { get => color; set => color = value; }
     
+    [Required(ErrorMessage = "No puede haber tarea sin estado")]
     [Display(Name = "Estado de la tarea")]
     public EstadoTarea Estado { get => estado; set => estado = value; }
     
@@ -32,13 +33,13 @@ public class TareaViewModel
     public int? IdUsuarioAsignado { get => idUsuarioAsignado; set => idUsuarioAsignado = value; }
 
     public TareaViewModel(Tarea tarea){
-        this.id = tarea.Id;
-        this.idTablero = tarea.IdTablero;
-        this.nombre = tarea.Nombre;
-        this.descripcion = tarea.Descripcion;
-        this.color = tarea.Color;
-        this.estado = tarea.Estado;
-        this.idUsuarioAsignado = tarea.IdUsuarioAsignado;
+        id = tarea.Id;
+        idTablero = tarea.IdTablero;
+        nombre = tarea.Nombre;
+        descripcion = tarea.Descripcion;
+        color = tarea.Color;
+        estado = tarea.Estado;
+        idUsuarioAsignado = tarea.IdUsuarioAsignado;
     }
 
     public TareaViewModel(){}

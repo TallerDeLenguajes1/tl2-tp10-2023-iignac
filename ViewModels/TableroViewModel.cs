@@ -20,10 +20,10 @@ public class TableroViewModel
     public string? Descripcion { get => descripcion; set => descripcion = value; }
 
     public TableroViewModel(Tablero tablero){
-        this.id = tablero.Id;
-        this.IdUsuarioPropietario = tablero.IdUsuarioPropietario;
-        this.nombre = tablero.Nombre;
-        this.descripcion = tablero.Descripcion;
+        id = tablero.Id;
+        IdUsuarioPropietario = tablero.IdUsuarioPropietario;
+        nombre = tablero.Nombre;
+        descripcion = tablero.Descripcion;
     }
 
     public TableroViewModel(){}

@@ -10,9 +10,9 @@ public class EditarTareaViewModel
     public List<UsuarioViewModel> ListaUsuariosVM { get => listaUsuariosVM; set => listaUsuariosVM = value; }
 
     public EditarTareaViewModel(Tarea tarea, List<Usuario> listaUsuarios){
-        this.tareaVM = new TareaViewModel(tarea);
-        this.listaUsuariosVM = new List<UsuarioViewModel>();
-        foreach (Usuario usuario in listaUsuarios) this.listaUsuariosVM.Add(new UsuarioViewModel(usuario));
+        tareaVM = new TareaViewModel(tarea);
+        listaUsuariosVM = new List<UsuarioViewModel>();
+        foreach (Usuario usuario in listaUsuarios) listaUsuariosVM.Add(new UsuarioViewModel(usuario));
     }
 
     public EditarTareaViewModel(){}

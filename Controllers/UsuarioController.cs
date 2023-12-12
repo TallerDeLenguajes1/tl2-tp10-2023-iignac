@@ -1,19 +1,19 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using tl2_tp10_2023_iignac.Models;
+using tl2_tp10_2023_iignac.Repository;
 using tl2_tp10_2023_iignac.ViewModels;
-
 namespace tl2_tp10_2023_iignac.Controllers;
 
-public class UsuarioController : Controller //NO hereda de ControllerBase
+public class UsuarioController : Controller
 {
     private readonly ILogger<UsuarioController> _logger;
-    private IUsuarioRepository usuarioRepo;
+    private readonly IUsuarioRepository _usuariosRepo;
 
-    public UsuarioController(ILogger<UsuarioController> logger)
+    public UsuarioController(ILogger<UsuarioController> logger, IUsuarioRepository usuariosRepo)
     {
         _logger = logger;
-        usuarioRepo = new UsuarioRepository();
+        _usuariosRepo = usuariosRepo;
     }
 
     private bool IsLogged(){
@@ -26,44 +26,80 @@ public class UsuarioController : Controller //NO hereda de ControllerBase
 
     [HttpGet]
     public IActionResult Index(){
-        if(IsLogged() && IsAdmin()){
-            return View(new IndexUsuariosViewModel(usuarioRepo.GetAll()));
-        }
-        return RedirectToRoute(new {controller = "Logueo", action="Index"});
+        try{
+            if(!IsLogged()) return RedirectToRoute(new {controller = "Logueo", action="Index"});
+            if(!IsAdmin()) return RedirectToRoute(new {controller = "Logueo", action="Index"});
+            var listaUsuarios = _usuariosRepo.GetAllUsuarios();
+            return View(new IndexUsuariosViewModel(listaUsuarios));
+        }catch(Exception ex){
+            _logger.LogError(ex.ToString());
+            return RedirectToAction("Error"); // return BadRequest();
+        }  
     }
 
     [HttpGet]
     public IActionResult CrearUsuario(){ 
-        if(IsLogged() && IsAdmin()) return View(new CrearUsuarioViewModel());  
-        return RedirectToRoute(new {controller = "Logueo", action="Index"});
+        if(!IsLogged()) RedirectToRoute(new {controller = "Logueo", action="Index"});
+        if(!IsAdmin()) return RedirectToAction("Error"); // return BadRequest();
+        return View(new UsuarioViewModel());
     }
 
     [HttpPost]
-    public IActionResult CrearUsuario(CrearUsuarioViewModel usuario){
-        usuarioRepo.Create(new Usuario(usuario.UsuarioNuevo));
-        return RedirectToAction("Index");
+    public IActionResult CrearUsuario(UsuarioViewModel usuarioVM){
+        try{
+            if(!IsLogged()) return RedirectToRoute(new {controller="Logueo", action="Index"});
+            if(!IsAdmin()) return RedirectToRoute(new {controller="Logueo", action="Index"}); //se controla si es admin nuevamente, aunque ya se haya controlo en el get, por si en el transcurso de la gestión se le cambia al usuario el rol
+            if(!ModelState.IsValid) return RedirectToAction("CrearUsuario");
+            Usuario usuario = new Usuario(usuarioVM);
+            _usuariosRepo.CreateUsuario(usuario);
+            return RedirectToAction("Index");
+        }catch(Exception ex){
+            _logger.LogError(ex.ToString());
+            return RedirectToAction("Error"); //return BadRequest();
+        }
     }
 
     [HttpGet]
     public IActionResult EditarUsuario(int idUsuario){
-        if(IsLogged() && IsAdmin()){
-            Usuario usuario = usuarioRepo.GetUsuario(idUsuario);
-            if(!string.IsNullOrEmpty(usuario.NombreUsuario)){
-                return View(new UsuarioViewModel(usuario));
-            }
+        try{
+            if(!IsLogged()) RedirectToRoute(new {controller="Logueo", action="Index"});
+            if(!IsAdmin()) RedirectToRoute(new {controller="Logueo", action="Index"});
+            var usuario = _usuariosRepo.GetUsuario(idUsuario);
+            return View(new UsuarioViewModel(usuario));
+        }catch(Exception ex){
+            _logger.LogError(ex.ToString());
+            return RedirectToAction("Index");
         }
-        return RedirectToRoute(new {controller = "Logueo", action="Index"});
     }
 
     [HttpPost]
-    public IActionResult EditarUsuario(UsuarioViewModel usuario){
-        Usuario usuarioAEditar = new Usuario(usuario);
-        usuarioRepo.Update(usuarioAEditar);
-        return RedirectToAction("Index");
+    public IActionResult EditarUsuario(UsuarioViewModel usuarioVM){
+        try{
+            if(!IsLogged()) return RedirectToRoute(new {controller="Logueo", action="Index"});
+            if(!IsAdmin()) return RedirectToRoute(new {controller="Logueo", action="Index"});
+            if(!ModelState.IsValid) return RedirectToAction("EditarUsuario", new {idUsuario = usuarioVM.Id});
+            Usuario usuario = new Usuario(usuarioVM);
+            _usuariosRepo.UpdateUsuario(usuario);
+            return RedirectToAction("Index");
+        }catch(Exception ex){
+            _logger.LogError(ex.ToString());
+            return RedirectToAction("Error"); //return BadRequest();
+        }
     }
 
     public IActionResult EliminarUsuario(int idUsuario){
-        usuarioRepo.Remove(idUsuario);
-        return RedirectToAction("Index");
+        try{
+            if(!IsLogged()) return RedirectToRoute(new {controller="Logueo", action="Index"});
+            if(!IsAdmin()) return RedirectToRoute(new {controller="Logueo", action="Index"});
+            _usuariosRepo.RemoveUsuario(idUsuario);
+            return RedirectToAction("Index");
+        }catch(Exception ex){
+            _logger.LogError(ex.ToString());
+            return RedirectToAction("Error"); //return BadRequest();
+        }
+    }
+
+    public IActionResult Error(){
+        return View(new ErrorViewModel());
     }
 }

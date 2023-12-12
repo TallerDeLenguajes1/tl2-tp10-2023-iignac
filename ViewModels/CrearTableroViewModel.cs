@@ -9,7 +9,7 @@ public class CrearTableroViewModel
     public TableroViewModel TableroVM { get => tableroVM; set => tableroVM = value; }
 
     public CrearTableroViewModel(int idUsuario){
-        this.idUsuarioPropietario = idUsuario;
+        idUsuarioPropietario = idUsuario;
     }
 
     public CrearTableroViewModel(){}

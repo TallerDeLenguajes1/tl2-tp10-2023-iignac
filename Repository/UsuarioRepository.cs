@@ -1,72 +1,91 @@
+using System.CodeDom;
 using System.Data.SQLite;
-
-namespace tl2_tp10_2023_iignac.Models;
+using tl2_tp10_2023_iignac.Models;
+namespace tl2_tp10_2023_iignac.Repository;
 
 public class UsuarioRepository : IUsuarioRepository
 {
-    private string cadenaConexion = "Data Source=DB/kanban.db;Cache=Shared"; //@"Data...
+    private readonly string connectionString;
 
-    public void Create(Usuario nuevoUsuario){
-        using (SQLiteConnection connection = new SQLiteConnection(cadenaConexion))
-        {
-            connection.Open();
-            string query = @"INSERT INTO Usuario (nombre_de_usuario, contrasenia, rol) VALUES (@nombreUs, @contraseniaUs, @rolUs);";  //$INSERT..."; 
-            SQLiteCommand command = new SQLiteCommand(query, connection);
-            command.Parameters.Add(new SQLiteParameter("@nombreUs", nuevoUsuario.NombreUsuario));
-            command.Parameters.Add(new SQLiteParameter("@contraseniaUs", nuevoUsuario.Contrasenia));
-            command.Parameters.Add(new SQLiteParameter("@rolUs", Convert.ToInt32(nuevoUsuario.RolUsuario)));
-            command.ExecuteNonQuery();
-            connection.Close();
-        }
+    public UsuarioRepository(string CadenaDeConexion){
+        connectionString = CadenaDeConexion;
     }
 
-    public void Update(Usuario usuarioModificar){
-        using (SQLiteConnection connection = new SQLiteConnection(cadenaConexion))
-        {
-            connection.Open();
-            string query;
-            if(!string.IsNullOrEmpty(usuarioModificar.Contrasenia)){
-                query = @"UPDATE Usuario SET nombre_de_usuario = @nombreUs, contrasenia = @contraseniaUs, rol = @rolUs WHERE id = @idUs;"; //$UPDATE...
-            }else{
-                query = @"UPDATE Usuario SET nombre_de_usuario = @nombreUs, rol = @rolUs WHERE id = @idUs;"; //$UPDATE...
-            }
-            SQLiteCommand command = new SQLiteCommand(query, connection);
-            command.Parameters.Add(new SQLiteParameter("@idUs", usuarioModificar.Id));
-            command.Parameters.Add(new SQLiteParameter("@nombreUs", usuarioModificar.NombreUsuario));
-            if(!string.IsNullOrEmpty(usuarioModificar.Contrasenia)) command.Parameters.Add(new SQLiteParameter("@contraseniaUs", usuarioModificar.Contrasenia));
-            command.Parameters.Add(new SQLiteParameter("@rolUs", Convert.ToInt32(usuarioModificar.RolUsuario)));
-            command.ExecuteNonQuery();
-            connection.Close();
-        }
-    }
-
-    public List<Usuario> GetAll(){
-        List<Usuario> listaUsuarios = new List<Usuario>();
-        using (SQLiteConnection connection = new SQLiteConnection(cadenaConexion))
-        {
-            connection.Open();
-            string query = @"SELECT * FROM Usuario;"; //$SELECT...
-            SQLiteCommand command = new SQLiteCommand(query, connection);
-            using(SQLiteDataReader reader = command.ExecuteReader())
+    public void CreateUsuario(Usuario usuario){
+        try{
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
-                while (reader.Read())
-                {
-                    Usuario usuario = new Usuario();
-                    usuario.Id = Convert.ToInt32(reader["id"]);
-                    usuario.NombreUsuario = reader["nombre_de_usuario"].ToString();
-                    usuario.Contrasenia = reader["contrasenia"].ToString();
-                    usuario.RolUsuario = (Rol) Convert.ToInt32(reader["rol"]);
-                    listaUsuarios.Add(usuario);
-                }
+                connection.Open();
+                string query = @"INSERT INTO Usuario (nombre_de_usuario, contrasenia, rol) VALUES (@nombreUs, @contraseniaUs, @rolUs);";  //$INSERT..."; 
+                SQLiteCommand command = new SQLiteCommand(query, connection);
+                command.Parameters.Add(new SQLiteParameter("@nombreUs", usuario.NombreUsuario));
+                command.Parameters.Add(new SQLiteParameter("@contraseniaUs", usuario.Contrasenia));
+                command.Parameters.Add(new SQLiteParameter("@rolUs", Convert.ToInt32(usuario.RolUsuario)));
+                command.ExecuteNonQuery();
+                connection.Close();
             }
-            connection.Close();
+        }catch(Exception){
+            throw new Exception("Hubo un problema al crear un nuevo usuario");
         }
-        return listaUsuarios;
+    }
+
+    public void UpdateUsuario(Usuario usuario){
+        try{
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                string query;
+                if(!string.IsNullOrEmpty(usuario.Contrasenia)){
+                    query = @"UPDATE Usuario SET nombre_de_usuario = @nombreUs, contrasenia = @contraseniaUs, rol = @rolUs WHERE id = @idUs;"; //$UPDATE...
+                }else{
+                    query = @"UPDATE Usuario SET nombre_de_usuario = @nombreUs, rol = @rolUs WHERE id = @idUs;"; //$UPDATE...
+                }
+                SQLiteCommand command = new SQLiteCommand(query, connection);
+                command.Parameters.Add(new SQLiteParameter("@idUs", usuario.Id));
+                command.Parameters.Add(new SQLiteParameter("@nombreUs", usuario.NombreUsuario));
+                if(!string.IsNullOrEmpty(usuario.Contrasenia)) command.Parameters.Add(new SQLiteParameter("@contraseniaUs", usuario.Contrasenia));
+                command.Parameters.Add(new SQLiteParameter("@rolUs", Convert.ToInt32(usuario.RolUsuario)));
+                command.ExecuteNonQuery();
+                connection.Close();
+            }
+        }catch(Exception){
+            throw new Exception($"Hubo un problema al modificar al usuario de nombre '{usuario.NombreUsuario}'");
+        }
+    }
+
+    public List<Usuario> GetAllUsuarios(){
+        try{
+            List<Usuario> listaUsuarios = new List<Usuario>();
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                string query = @"SELECT * FROM Usuario;"; //$SELECT...
+                SQLiteCommand command = new SQLiteCommand(query, connection);
+                using(SQLiteDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        Usuario usuario = new Usuario
+                        {
+                            Id = Convert.ToInt32(reader["id"]),
+                            NombreUsuario = reader["nombre_de_usuario"].ToString(),
+                            Contrasenia = reader["contrasenia"].ToString(),
+                            RolUsuario = (Rol)Convert.ToInt32(reader["rol"])
+                        };
+                        listaUsuarios.Add(usuario);
+                    }
+                }
+                connection.Close();
+            }
+            return listaUsuarios;
+        }catch(Exception){
+            throw new Exception("Hubo un problema en la base de datos para realizar la lectura de datos de los usuarios");
+        }
     }
 
     public Usuario GetUsuario(int idUsuario){
-        Usuario usuario = new Usuario();
-        using (SQLiteConnection connection = new SQLiteConnection(cadenaConexion))
+        Usuario usuarioEncontrado = null;
+        using (SQLiteConnection connection = new SQLiteConnection(connectionString))
         {
             connection.Open();
             string query = @"SELECT * FROM Usuario WHERE id = @idUs;"; 
@@ -74,52 +93,62 @@ public class UsuarioRepository : IUsuarioRepository
             command.Parameters.Add(new SQLiteParameter("@idUs", idUsuario));
             using(SQLiteDataReader reader = command.ExecuteReader())
             {
-                if (reader.Read())
-                {
-                    usuario.Id = Convert.ToInt32(reader["id"]);
-                    usuario.NombreUsuario = reader["nombre_de_usuario"].ToString();
-                    usuario.Contrasenia = reader["contrasenia"].ToString();
-                    usuario.RolUsuario = (Rol) Convert.ToInt32(reader["rol"]);
+                if (reader.Read()){
+                    usuarioEncontrado = new Usuario
+                    {
+                        Id = Convert.ToInt32(reader["id"]),
+                        NombreUsuario = reader["nombre_de_usuario"].ToString(),
+                        Contrasenia = reader["contrasenia"].ToString(),
+                        RolUsuario = (Rol)Convert.ToInt32(reader["rol"])
+                    };
                 }
             }
             connection.Close();
         }
-        return usuario;
+        if(usuarioEncontrado == null) throw new Exception("Usuario inexistente");
+        return usuarioEncontrado;
     }
 
     public Usuario GetUsuario(string nombre, string contrasenia){
-        Usuario usuario = new Usuario();
-        using (SQLiteConnection connection = new SQLiteConnection(cadenaConexion))
+        Usuario usuarioEncontrado = null;
+        using (SQLiteConnection connection = new SQLiteConnection(connectionString))
         {
             connection.Open();
-            string query = @"SELECT * FROM Usuario WHERE nombre_de_usuario = @nombreUsuario AND contrasenia = @contraseniaUsuario;"; 
+            string query = @"SELECT * FROM Usuario WHERE nombre_de_usuario = @nombreUs AND contrasenia = @contraseniaUs;"; 
             SQLiteCommand command = new SQLiteCommand(query, connection);
-            command.Parameters.Add(new SQLiteParameter("@nombreUsuario", nombre));
-            command.Parameters.Add(new SQLiteParameter("@contraseniaUsuario", contrasenia));
+            command.Parameters.Add(new SQLiteParameter("@nombreUs", nombre));
+            command.Parameters.Add(new SQLiteParameter("@contraseniaUs", contrasenia));
             using(SQLiteDataReader reader = command.ExecuteReader())
             {
-                if (reader.Read())
-                {
-                    usuario.Id = Convert.ToInt32(reader["id"]);
-                    usuario.NombreUsuario = reader["nombre_de_usuario"].ToString();
-                    usuario.Contrasenia = reader["contrasenia"].ToString();
-                    usuario.RolUsuario = (Rol) Convert.ToInt32(reader["rol"]);
+                if (reader.Read()){
+                    usuarioEncontrado = new Usuario
+                    {
+                        Id = Convert.ToInt32(reader["id"]),
+                        NombreUsuario = reader["nombre_de_usuario"].ToString(),
+                        Contrasenia = reader["contrasenia"].ToString(),
+                        RolUsuario = (Rol)Convert.ToInt32(reader["rol"])
+                    };
                 }
             }
             connection.Close();
         }
-        return usuario;
+        if(usuarioEncontrado == null) throw new Exception("Usuario inexistente");
+        return usuarioEncontrado;
     }
 
-    public void Remove(int idUsuario){
-        using (SQLiteConnection connection = new SQLiteConnection(cadenaConexion))
-        {
-            connection.Open();
-            string query = @"DELETE FROM Usuario WHERE id = @idUs;"; //$DELETE...
-            SQLiteCommand command = new SQLiteCommand(query, connection);
-            command.Parameters.Add(new SQLiteParameter("@idUs", idUsuario));
-            command.ExecuteNonQuery();
-            connection.Close();
+    public void RemoveUsuario(int idUsuario){
+        try{
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                string query = @"DELETE FROM Usuario WHERE id = @idUs;"; //$DELETE...
+                SQLiteCommand command = new SQLiteCommand(query, connection);
+                command.Parameters.Add(new SQLiteParameter("@idUs", idUsuario));
+                command.ExecuteNonQuery();
+                connection.Close();
+            }
+        }catch(Exception){
+            throw new Exception($"Hubo un problema al eliminar al usuario de id '{idUsuario}'");
         }
     } 
 }

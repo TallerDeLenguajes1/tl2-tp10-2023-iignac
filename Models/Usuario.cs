@@ -1,5 +1,4 @@
 using tl2_tp10_2023_iignac.ViewModels;
-
 namespace tl2_tp10_2023_iignac.Models;
 
 public enum Rol {Administrador, Operador}
@@ -16,11 +15,11 @@ public class Usuario
     public string Contrasenia { get => contrasenia; set => contrasenia = value; }
     public Rol RolUsuario { get => rolUsuario; set => rolUsuario = value; }
 
-    public Usuario(UsuarioViewModel usuario){
-        this.id = usuario.Id;
-        this.nombreUsuario = usuario.Nombre;
-        this.contrasenia = usuario.Contrasenia;
-        this.rolUsuario = usuario.Rol;
+    public Usuario(UsuarioViewModel usuarioVM){
+        id = usuarioVM.Id;
+        nombreUsuario = usuarioVM.Nombre;
+        contrasenia = usuarioVM.Contrasenia;
+        rolUsuario = usuarioVM.Rol;
     }
 
     public Usuario(){}

@@ -1,10 +1,19 @@
+using tl2_tp10_2023_iignac.Repository;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddDistributedMemoryCache(); //*** AGREGAR PARA MANEJO DE SESION ***
+builder.Services.AddDistributedMemoryCache(); //*** AGREGO PARA MANEJO DE SESION ***
 
-builder.Services.AddSession(options => //*** AGREGAR PARA MANEJO DE SESION ***
+var CadenaDeConexion = builder.Configuration.GetConnectionString("SqliteConexion")!.ToString(); //*** AGREGO PARA INYECTAR LA DB EN LOS REPOSITORIOS ***
+builder.Services.AddSingleton<string>(CadenaDeConexion); //*** AGREGO PARA INYECTAR LA DB EN LOS REPOSITORIOS ***
+
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>(); //*** AGREGO PARA INYECTAR El REPOSITORIO USUARIO ***
+builder.Services.AddScoped<ITableroRepository, TableroRepository>(); //*** AGREGO PARA INYECTAR El REPOSITORIO TABLERO ***
+builder.Services.AddScoped<ITareaRepository, TareaRepository>(); //*** AGREGO PARA INYECTAR El REPOSITORIO TAREA ***
+
+builder.Services.AddSession(options => //*** AGREGO PARA MANEJO DE SESION ***
 {
     options.IdleTimeout = TimeSpan.FromSeconds(40); //tiempo de vida (en segundos) de la variable de sesión
     options.Cookie.HttpOnly = true;
@@ -25,7 +34,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-app.UseSession(); // *** AGREGAR PARA MANEJO DE SESION ***
+app.UseSession(); // *** AGREGO PARA MANEJO DE SESION ***
 app.UseAuthorization();
 
 app.MapControllerRoute(

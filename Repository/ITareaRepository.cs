@@ -1,12 +1,14 @@
-namespace tl2_tp10_2023_iignac.Models;
+using tl2_tp10_2023_iignac.Models;
+namespace tl2_tp10_2023_iignac.Repository;
 
 public interface ITareaRepository
 {
-    public void Create(Tarea tarea);
-    public void Update(Tarea tarea);
-    public void Remove(int idTarea);
-    public List<Tarea> GetAllByIdTablero(int idTablero);
-    public Tarea GetByIdTarea(int idTarea);
+    public void CreateTarea(Tarea tarea);
+    public void UpdateTarea(Tarea tarea);
+    public void RemoveTarea(int idTarea);
+    public List<Tarea> GetTareasDeTablero(int idTablero);
+    public Tarea GetTarea(int idTarea);
+    
     // public bool AsignarUsuario(int idUsuario, int idTarea);
     // public bool UpdateNombre(int id, string nuevoNombre);
     // public bool UpdateEstado(int idTarea, EstadoTarea nuevoEstado);

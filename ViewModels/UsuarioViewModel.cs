@@ -17,15 +17,17 @@ public class UsuarioViewModel
 
     [Required(ErrorMessage = "Este campo es requerido")]
     [Display(Name = "Contraseña")]
+    [MinLength(8, ErrorMessage = "Como minimo 8 caracteres")]
     public string Contrasenia { get => contrasenia; set => contrasenia = value; }
 
+    [Required(ErrorMessage = "Este campo es requerido")]
     [Display(Name = "Rol del usuario")]
     public Rol Rol { get => rol; set => rol = value; }
 
     public UsuarioViewModel(Usuario usuario){
-        this.id = usuario.Id;
-        this.nombre = usuario.NombreUsuario;
-        this.rol = usuario.RolUsuario;
+        id = usuario.Id;
+        nombre = usuario.NombreUsuario;
+        rol = usuario.RolUsuario;
     }
 
     public UsuarioViewModel(){}

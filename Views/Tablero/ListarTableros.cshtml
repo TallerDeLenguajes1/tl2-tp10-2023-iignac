@@ -1,10 +1,10 @@
-@model tl2_tp10_2023_iignac.ViewModels.TablerosUsuarioViewModel
+@model tl2_tp10_2023_iignac.ViewModels.ListarTablerosUsuarioViewModel
 
 @{ViewData["Title"] = "Tableros";}
 
 <section>
     <h1>Tableros de @Model.NombrePropietario</h1>
-    @if(@Model.ListaTablerosUsuario.Count == 0){
+    @if(@Model.ListaTablerosVM.Count == 0){
         <p><strong>NO EXISTEN TABLEROS ASOCIADOS AL USUARIO</strong></p>
     }else{
         <table class="table table-bordered">
@@ -17,7 +17,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var tablero in Model.ListaTablerosUsuario)
+                @foreach (var tablero in Model.ListaTablerosVM)
                 {
                     <tr>
                         <td>@tablero.Id</td>

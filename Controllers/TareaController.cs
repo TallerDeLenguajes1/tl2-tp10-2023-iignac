@@ -1,23 +1,23 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using tl2_tp10_2023_iignac.Models;
+using tl2_tp10_2023_iignac.Repository;
 using tl2_tp10_2023_iignac.ViewModels;
-
 namespace tl2_tp10_2023_iignac.Controllers;
 
-public class TareaController : Controller //NO hereda de ControllerBase
+public class TareaController : Controller 
 {
     private readonly ILogger<TareaController> _logger;
-    private ITareaRepository tareasRepo;
-    private ITableroRepository tableroRepo;
-    private IUsuarioRepository usuarioRepo;
+    private ITareaRepository _tareasRepo;
+    private ITableroRepository _tablerosRepo;
+    private IUsuarioRepository _usuariosRepo;
 
-    public TareaController(ILogger<TareaController> logger)
+    public TareaController(ILogger<TareaController> logger, ITareaRepository tareasRepo, ITableroRepository tablerosRepo, IUsuarioRepository usuariosRepo)
     {
         _logger = logger;
-        tareasRepo = new TareaRepository();
-        tableroRepo = new TableroRepository();
-        usuarioRepo = new UsuarioRepository();
+        _tareasRepo = tareasRepo;
+        _tablerosRepo = tablerosRepo;
+        _usuariosRepo = usuariosRepo;
     }
 
     private bool IsLogged(){
@@ -30,71 +30,104 @@ public class TareaController : Controller //NO hereda de ControllerBase
 
     [HttpGet]
     public IActionResult ListarTareas(int idTablero){
-        if(IsLogged()){
-            Tablero tablero = tableroRepo.GetByIdTablero(idTablero);
-            if(!string.IsNullOrEmpty(tablero.Nombre)){
-                if(!IsAdmin() && Convert.ToInt32(HttpContext.Session.GetString("id")) != tablero.IdUsuarioPropietario){
-                    return RedirectToRoute(new {controller = "Logueo", action="Index"}); //Debe retornar un 404
-                }
-                List<Tarea> listaTareas = tareasRepo.GetAllByIdTablero(idTablero);
-                List<Usuario> listaUsuarios = usuarioRepo.GetAll();
-                return View(new TareasTableroViewModel(listaTareas, listaUsuarios, tablero.Nombre));
+        try{
+            if(!IsLogged()) return RedirectToRoute(new {controller = "Logueo", action="Index"});
+            var tablero = _tablerosRepo.GetTablero(idTablero);
+
+            // un admin puede ver todos los tableros y todas las tareas
+            // un operador puede ver solo sus tableros y las tareas de estos
+            if(!IsAdmin() && Convert.ToInt32(HttpContext.Session.GetString("id")) != tablero.IdUsuarioPropietario){
+                return RedirectToRoute(new {controller = "Logueo", action="Index"});
             }
-            return RedirectToRoute(new {controller = "Logueo", action="Index"}); //Debe retornar un 404
+            var listaTareas = _tareasRepo.GetTareasDeTablero(idTablero);
+            var listaUsuarios = _usuariosRepo.GetAllUsuarios();
+            return View(new ListarTareasTableroViewModel(listaTareas, listaUsuarios, tablero.Nombre));
+        }catch(Exception ex){
+            _logger.LogError(ex.ToString());
+            return RedirectToAction("Error"); // return BadRequest()
         }
-        return RedirectToRoute(new {controller = "Logueo", action="Index"});
     }
 
     [HttpGet]
-    public IActionResult CrearTarea(int idTablero){  
-        if(IsLogged()){
-            Tablero tablero = tableroRepo.GetByIdTablero(idTablero);
-            if(!string.IsNullOrEmpty(tablero.Nombre)){
-                if(!IsAdmin() && Convert.ToInt32(HttpContext.Session.GetString("id")) != tablero.IdUsuarioPropietario){
-                    return RedirectToRoute(new {controller = "Logueo", action="Index"}); //Debe retornar un 404
-                }
-                List<Usuario> listaUsuarios = usuarioRepo.GetAll();
-                List<UsuarioViewModel> listaUsuariosVM = new List<UsuarioViewModel>();
-                foreach (Usuario usuario in listaUsuarios) listaUsuariosVM.Add(new UsuarioViewModel(usuario));
-                return View(new CrearTareaViewModel(listaUsuariosVM, idTablero));
+    public IActionResult CrearTarea(int idTablero){
+        try{
+            if(!IsLogged()) return RedirectToRoute(new {controller = "Logueo", action="Index"});
+            Tablero tablero = _tablerosRepo.GetTablero(idTablero);
+
+            //un admin puede crear tareas en todos los tableros
+            //un operador solo puede crear tareas en sus propios tableros
+            if(!IsAdmin() && Convert.ToInt32(HttpContext.Session.GetString("id")) != tablero.IdUsuarioPropietario){
+                return RedirectToRoute(new {controller = "Logueo", action="Index"});
             }
-            return RedirectToRoute(new {controller = "Logueo", action="Index"}); //Debe retornar un 404
+            List<Usuario> listaUsuarios = _usuariosRepo.GetAllUsuarios();
+            List<UsuarioViewModel> listaUsuariosVM = new List<UsuarioViewModel>();
+            foreach (Usuario usuario in listaUsuarios) listaUsuariosVM.Add(new UsuarioViewModel(usuario));
+            return View(new CrearTareaViewModel(listaUsuariosVM, idTablero));
+        }catch(Exception ex){
+            _logger.LogError(ex.ToString());
+            return RedirectToAction("Error");
         }
-        return RedirectToRoute(new {controller = "Logueo", action="Index"});
     }
 
     [HttpPost]
     public IActionResult CrearTarea(CrearTareaViewModel nueva){
-        Tarea nuevaTarea = new Tarea(nueva.TareaVM);
-        tareasRepo.Create(nuevaTarea);
-        return RedirectToAction("ListarTareas", new{idTablero = nuevaTarea.IdTablero});
+        try{
+            if(!IsLogged()) return RedirectToRoute(new {controller = "Logueo", action="Index"});
+            if(!ModelState.IsValid) return RedirectToAction("CrearTarea", new {idTablero = nueva.IdTablero});
+            Tarea nuevaTarea = new Tarea(nueva.TareaVM);
+            _tareasRepo.CreateTarea(nuevaTarea);
+            return RedirectToAction("ListarTareas", new{idTablero = nuevaTarea.IdTablero});
+        }catch(Exception ex){
+            _logger.LogError(ex.ToString());
+            return RedirectToAction("Error");
+        }
     }
 
     [HttpGet]
     public IActionResult EditarTarea(int idTarea){
-        if(IsLogged()){
-            Tarea tarea = tareasRepo.GetByIdTarea(idTarea);
-            if(!string.IsNullOrEmpty(tarea.Nombre)){
-                if(!IsAdmin() && Convert.ToInt32(HttpContext.Session.GetString("id")) != tableroRepo.GetByIdTablero(tarea.IdTablero).IdUsuarioPropietario){
-                    return RedirectToRoute(new {controller = "Logueo", action="Index"}); //Debe retornar un 404
-                }
-                return View(new EditarTareaViewModel(tarea, usuarioRepo.GetAll()));
+        try{
+            if(!IsLogged()) return RedirectToRoute(new {controller = "Logueo", action="Index"});
+            Tarea tarea = _tareasRepo.GetTarea(idTarea);
+            
+            //un admin puede editar todas las tareas
+            //un operador solo puede editar las tareas de sus propios tableros
+            if(!IsAdmin() && Convert.ToInt32(HttpContext.Session.GetString("id")) != _tablerosRepo.GetTablero(tarea.IdTablero).IdUsuarioPropietario){
+                return RedirectToRoute(new {controller = "Logueo", action="Index"});
             }
-            return RedirectToRoute(new {controller = "Logueo", action="Index"}); //Debe retornar un 404
+            return View(new EditarTareaViewModel(tarea, _usuariosRepo.GetAllUsuarios()));
+        }catch(Exception ex){
+            _logger.LogError(ex.ToString());
+            return RedirectToAction("Error");
         }
-        return RedirectToRoute(new {controller = "Logueo", action="Index"});
     }
 
     [HttpPost]
     public IActionResult EditarTarea(EditarTareaViewModel tareaAEditar){
-        Tarea tareaEditada = new Tarea(tareaAEditar.TareaVM);
-        tareasRepo.Update(tareaEditada);
-        return RedirectToAction("ListarTareas", new{idTablero = tareaEditada.IdTablero});
+        try{
+            if(!IsLogged()) return RedirectToRoute(new {controller = "Logueo", action="Index"});
+            if(!ModelState.IsValid) return RedirectToAction("EditarTarea", new {idTarea = tareaAEditar.TareaVM.Id});
+            Tarea tareaEditada = new Tarea(tareaAEditar.TareaVM);
+            _tareasRepo.UpdateTarea(tareaEditada);
+            return RedirectToAction("ListarTareas", new{idTablero = tareaEditada.IdTablero});
+        }catch(Exception ex){
+            _logger.LogError(ex.ToString());
+            return RedirectToAction("Error");
+        }
     }
 
     public IActionResult EliminarTarea(int idTarea){
-        int id = tareasRepo.GetByIdTarea(idTarea).IdTablero;
-        tareasRepo.Remove(idTarea);
-        return RedirectToAction("ListarTareas", new{idTablero = id});
+        try{
+            if(!IsLogged()) RedirectToRoute(new {controller = "Logueo", action="Index"});
+            int id = _tareasRepo.GetTarea(idTarea).IdTablero;
+            _tareasRepo.RemoveTarea(idTarea);
+            return RedirectToAction("ListarTareas", new{idTablero = id});
+        }catch(Exception ex){
+            _logger.LogError(ex.ToString());
+            return RedirectToAction("Error");
+        }
+    }
+
+    public IActionResult Error(){
+        return View(new ErrorViewModel());
     }
 }
